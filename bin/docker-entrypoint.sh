@@ -137,6 +137,18 @@ echo "${TARGET_PROPERTY} = ${jira_logfile}" >> ${JIRA_INSTALL}/conf/logging.prop
 
 setAllSetEnvs
 
+
+# if there are any certificates that should be imported to the JVM Keystore,
+# import them.  Note that KEYSTORE is defined in the Dockerfile
+# (taken from https://github.com/teamatldocker/crowd/blob/master/imagescripts/docker-entrypoint.sh)
+if [ -d ${JIRA_HOME}/certs ]; then
+  for c in ${JIRA_HOME}/certs/* ; do
+    echo Found certificate $c, importing to JVM keystore
+    c_base=$(basename $c)
+    keytool -trustcacerts -keystore $KEYSTORE -storepass changeit -noprompt -importcert -alias $c_base -file $c || :
+  done
+fi
+
 if [ "$1" = 'jira' ] || [ "${1:0:1}" = '-' ]; then
   waitForDB
   purgeJiraPlugins
