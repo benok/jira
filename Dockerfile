@@ -10,6 +10,7 @@ ENV JIRA_USER=jira                              \
     JIRA_INSTALL=/opt/jira                      \
     JIRA_SCRIPTS=/usr/local/share/atlassian     \
     JRE_HOME=$JAVA_HOME                         \
+    KEYSTORE=$JAVA_HOME/lib/security/cacerts    \
     # Fix for this issue - https://jira.atlassian.com/browse/JRASERVER-46152 \
     _RUNJAVA=java
 
@@ -82,7 +83,6 @@ RUN export GLIBC_VERSION=2.29-r0                               \
     && export LE_CROSS_3=lets-encrypt-x3-cross-signed.der      \
     && export LE_CROSS_4=lets-encrypt-x4-cross-signed.der      \
     # Adding Let's Encrypt CA to truststore                    \
-    && export KEYSTORE=$JRE_HOME/lib/security/cacerts          \
     && wget $LE_DOWNLOAD_URL/$LE_AUTH_1                        \
     && wget $LE_DOWNLOAD_URL/$LE_AUTH_2                        \
     && wget $LE_DOWNLOAD_URL/$LE_CROSS_1                       \
@@ -95,6 +95,8 @@ RUN export GLIBC_VERSION=2.29-r0                               \
     && keytool -trustcacerts -keystore $KEYSTORE -storepass changeit -noprompt -importcert -alias letsencryptauthorityx2 -file $LE_CROSS_2 \
     && keytool -trustcacerts -keystore $KEYSTORE -storepass changeit -noprompt -importcert -alias letsencryptauthorityx3 -file $LE_CROSS_3 \
     && keytool -trustcacerts -keystore $KEYSTORE -storepass changeit -noprompt -importcert -alias letsencryptauthorityx4 -file $LE_CROSS_4 \
+    # Prepere cert import directory                            \
+    && mkdir $JIRA_HOME/certs                                  \
     # Remove build packages                                    \
     && apk del                                                 \
       --no-cache                                               \
@@ -134,7 +136,7 @@ RUN wget -O jira.bin https://www.atlassian.com/software/jira/downloads/binary/at
     # Install Atlassian SSL tool - mainly to be able to create application links with other Atlassian tools, which run LE SSL certificates \
     && wget -O /home/$JIRA_USER/SSLPoke.class https://confluence.atlassian.com/kb/files/779355358/779355357/1/1441897666313/SSLPoke.class  \
     # Set permissions                                                                          \
-    && chown -R $JIRA_USER:$JIRA_GROUP $JIRA_HOME $JIRA_INSTALL $JIRA_SCRIPTS /home/$JIRA_USER \
+    && chown -R $JIRA_USER:$JIRA_GROUP $JIRA_HOME $JIRA_INSTALL $JIRA_SCRIPTS /home/$JIRA_USER $KEYSTORE\
     # Clean caches and tmps                                                                    \
     && rm -rf /var/cache/apk/* /tmp/* /var/log/*
 
