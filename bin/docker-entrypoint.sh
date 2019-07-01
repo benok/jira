@@ -51,6 +51,15 @@ function waitForDB() {
 }
 
 SERAPH_CONFIG_FILE="/opt/jira/atlassian-jira/WEB-INF/classes/seraph-config.xml"
+CROWD_PROPERTIES_FILE="/opt/jira/atlassian-jira/WEB-INF/classes/crowd.properties"
+
+function updateProperties() {
+  local propertyfile=$1
+  local propertyname=$2
+  local propertyvalue=$3
+  sed -i "/${propertyname}/d" ${propertyfile}
+  echo "${propertyname}=${propertyvalue}" >> ${propertyfile}
+}
 
 #
 # Enable crowd sso authenticator java class in image config file
@@ -58,6 +67,30 @@ SERAPH_CONFIG_FILE="/opt/jira/atlassian-jira/WEB-INF/classes/seraph-config.xml"
 function enableCrowdSSO() {
   xmlstarlet ed -P -S -L --delete "//authenticator" $SERAPH_CONFIG_FILE
   xmlstarlet ed -P -S -L -s "//security-config" --type elem -n authenticator -i "//authenticator[not(@class)]" -t attr -n class -v "com.atlassian.jira.security.login.SSOSeraphAuthenticator" $SERAPH_CONFIG_FILE
+  if [ -f "${CROWD_PROPERTIES_FILE}" ]; then
+    rm -f ${CROWD_PROPERTIES_FILE}
+  fi
+  touch ${CROWD_PROPERTIES_FILE}
+  if [ -n "${CROWD_SSO_APPLICATION_NAME}" ]; then
+    updateProperties ${CROWD_PROPERTIES_FILE} "application.name" "${CROWD_SSO_APPLICATION_NAME}"
+  fi
+  if [ -n "${CROWD_SSO_APPLICATION_PASSWORD}" ]; then
+    updateProperties ${CROWD_PROPERTIES_FILE} "application.password" "${CROWD_SSO_APPLICATION_PASSWORD}"
+  fi
+  if [ -n "${CROWD_SSO_BASE_URL}" ]; then
+    updateProperties ${CROWD_PROPERTIES_FILE} "crowd.base.url" "${CROWD_SSO_BASE_URL}"
+    updateProperties ${CROWD_PROPERTIES_FILE} "crowd.server.url" "${CROWD_SSO_BASE_URL}services/"
+  fi
+  if [ -n "${CROWD_SSO_SESSION_VALIDATION}" ]; then
+    updateProperties ${CROWD_PROPERTIES_FILE} "session.validationinterval" ${CROWD_SSO_SESSION_VALIDATION}
+  else
+    updateProperties ${CROWD_PROPERTIES_FILE} "session.validationinterval" "2"
+  fi
+  echo 'application.login.url
+session.isauthenticated=session.isauthenticated
+session.tokenkey=session.tokenkey
+session.lastvalidation=session.lastvalidation
+  ' >> ${CROWD_PROPERTIES_FILE}
 }
 
 #
