@@ -75,7 +75,9 @@ function enableCrowdSSO() {
     updateProperties ${CROWD_PROPERTIES_FILE} "application.name" "${CROWD_SSO_APPLICATION_NAME}"
   fi
   if [ -n "${CROWD_SSO_APPLICATION_PASSWORD}" ]; then
+    [[ ${CROWD_SSO_APPLICATION_PASSWORD} =~ ^/run/secrets/.* ]] && [ -r ${CROWD_SSO_APPLICATION_PASSWORD} ] && CROWD_SSO_APPLICATION_PASSWORD=$(cat $CROWD_SSO_APPLICATION_PASSWORD)
     updateProperties ${CROWD_PROPERTIES_FILE} "application.password" "${CROWD_SSO_APPLICATION_PASSWORD}"
+    unset CROWD_SSO_APPLICATION_PASSWORD
   fi
   if [ -n "${CROWD_SSO_BASE_URL}" ]; then
     updateProperties ${CROWD_PROPERTIES_FILE} "crowd.base.url" "${CROWD_SSO_BASE_URL}"
