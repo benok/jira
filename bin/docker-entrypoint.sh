@@ -81,7 +81,7 @@ function enableCrowdSSO() {
   fi
   if [ -n "${CROWD_SSO_BASE_URL}" ]; then
     updateProperties ${CROWD_PROPERTIES_FILE} "crowd.base.url" "${CROWD_SSO_BASE_URL}"
-    updateProperties ${CROWD_PROPERTIES_FILE} "crowd.server.url" "${CROWD_SSO_BASE_URL}services/"
+    updateProperties ${CROWD_PROPERTIES_FILE} "crowd.server.url" "${CROWD_SSO_BASE_URL}/services/"
   fi
   if [ -n "${CROWD_SSO_SESSION_VALIDATION}" ]; then
     updateProperties ${CROWD_PROPERTIES_FILE} "session.validationinterval" ${CROWD_SSO_SESSION_VALIDATION}
