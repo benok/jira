@@ -178,9 +178,11 @@ setAllSetEnvs
 # (taken from https://github.com/teamatldocker/crowd/blob/master/imagescripts/docker-entrypoint.sh)
 if [ -d ${JIRA_HOME}/certs ]; then
   for c in ${JIRA_HOME}/certs/* ; do
-    echo Found certificate $c, importing to JVM keystore
-    c_base=$(basename $c)
-    keytool -trustcacerts -keystore $KEYSTORE -storepass changeit -noprompt -importcert -alias $c_base -file $c || :
+    if [[ $c != "${JIRA_HOME}/certs/*" ]]; then  # workaround for cert dir is empty
+      echo Found certificate $c, importing to JVM keystore
+      c_base=$(basename $c)
+      keytool -trustcacerts -keystore $KEYSTORE -storepass changeit -noprompt -importcert -alias $c_base -file $c || :
+    fi
   done
 fi
 
