@@ -2,6 +2,8 @@
 
 set -o errexit
 
+[[ ${DEBUG} == true ]] && set -x
+
 . "${JIRA_SCRIPTS}"/common.sh
 
 rm -f /opt/atlassian-home/.jira-home.lock
@@ -23,6 +25,13 @@ if [ -n "$JIRA_DATABASE_URL" ]; then
   fi
   if [ "$JIRA_DB_TYPE" == "mssql" ]; then
     SCHEMA='<schema-name>dbo</schema-name>'
+  fi
+  if [[ "$JIRA_DB_TYPE" =~ ^postgres ]]; then
+    # Connection problems to PostgreSQL result in stuck threads in Jira
+    # https://confluence.atlassian.com/jirakb/connection-problems-to-postgresql-result-in-stuck-threads-in-jira-1047534091.html
+    EXTRA='<connection-properties>tcpKeepAlive=true;socketTimeout=240</connection-properties>'
+  else
+    EXTRA='<!-- extra settings here -->'
   fi
 
   cat <<END > ${JIRA_HOME}/dbconfig.xml
@@ -49,6 +58,7 @@ if [ -n "$JIRA_DATABASE_URL" ]; then
     <time-between-eviction-runs-millis>300000</time-between-eviction-runs-millis>
     <pool-test-on-borrow>false</pool-test-on-borrow>
     <pool-test-while-idle>true</pool-test-while-idle>
+    $EXTRA
   </jdbc-datasource>
 </jira-database-config>
 END
