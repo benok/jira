@@ -105,7 +105,7 @@ RUN export GLIBC_VERSION=2.29-r0                               \
     && rm -rf /var/cache/apk/* /tmp/* /var/log/*
 
 # Version
-ARG JIRA_VERSION=9.4.0
+ARG JIRA_VERSION=9.4.7
 
 # Language
 ARG LANG_LANGUAGE=en
