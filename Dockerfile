@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk8-openj9:alpine-jre
+FROM adoptopenjdk/openjdk11:jre-11.0.11_9-alpine
 # this image already contains glibc
 
 ENV JIRA_USER=jira                              \
